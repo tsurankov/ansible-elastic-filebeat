@@ -43,11 +43,15 @@
   become: True
   notify: restart_filebeat
 
+- name: List all disabled modules
+  find:
+    paths: "/etc/filebeat/modules.d"
+    patterns: "*.disabled"
+  register: filebeat_disabled_modules
+
 - name: Erase unmanaged modules
   file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: absent
-  with_fileglob:
-    - "/etc/filebeat/modules.d/*.yml.disabled"
+  with_items: "{{ filebeat_disabled_modules.files }}"
   become: True
-  notify: restart_filebeat
